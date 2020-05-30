@@ -14,13 +14,22 @@
         "
         style="
           left: <%= sticker.x %>px;
-          top: <%= sticker.y %>px
+          top: <%= sticker.y %>px;
+          background-color: <%= sticker.background_color %>
         "
       >
         <div
           id="sticker-<%= sticker.id %>"
           class="sticker"
         >
+          <div
+            class="hover-section"
+            phx-click="delete_sticker"
+            phx-value-id="<%= sticker.id %>"
+            phx-hook="delete_sticker_hook"
+          >
+            <div class="delete-sticker"></div>
+          </div>
         </div>
       </div>
       <% end %>

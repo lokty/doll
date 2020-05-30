@@ -180,6 +180,12 @@ defmodule Doll.Websites do
     |> Repo.update()
   end
 
+  def delete_sticker_by_id(id) do
+    get_sticker!(id)
+    |> delete_sticker()
+    |> broadcast_change([:sticker, :deleted])
+  end
+
   @doc """
   Deletes a sticker.
 

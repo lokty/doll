@@ -6,8 +6,8 @@ defmodule Doll.Repo.Migrations.CreateStickers do
       add :x, :integer
       add :y, :integer
       add :type, :string
-      add :parent_id, references(:stickers)
-      add :website_id, references(:websites)
+      add :parent_id, references(:stickers, on_delete: :nothing)
+      add :website_id, references(:websites, on_delete: :nothing)
 
       timestamps()
     end

@@ -26,12 +26,25 @@ defmodule DollWeb.WebsiteLive.Show do
   end
 
   def handle_event("add_sticker", _, socket) do
-    Websites.create_sticker(%{x: 100, y: 100, website_id: socket.assigns.website.id})
+    Websites.create_sticker(%{
+      x: 100,
+      y: 100,
+      website_id: socket.assigns.website.id
+    })
+    {:noreply, socket}
+  end
+
+  def handle_event("delete_sticker", %{"id" => id}, socket) do
+    Websites.delete_sticker_by_id(id)
+    # new_stickers = Enum.filter(socket.assigns.stickers, fn old_sticker ->
+    #   id != old_sticker.id
+    # end)
+    # {:noreply, socket |> assign(:stickers, new_stickers)}
     {:noreply, socket}
   end
 
   def handle_event("started_drag", %{"id" => sticker_id, "clientX" => client_x, "clientY" => client_y}, socket) do
-    unless socket.assigns.active_sticker do
+    if !socket.assigns.active_sticker && sticker_id do
       sticker = Websites.get_sticker!(sticker_id)
       drag_origin = %{x: client_x, y: client_y}
       {
@@ -46,22 +59,30 @@ defmodule DollWeb.WebsiteLive.Show do
   end
 
   def handle_event("stopped_drag", %{"id" => sticker_id}, socket) do
-    new_sticker = Enum.find(socket.assigns.stickers, nil, fn sticker ->
-      sticker_id == sticker.id
-    end)
-    sticker = Websites.get_sticker!(sticker_id)
-    attrs = %{
-      x: new_sticker.x,
-      y: new_sticker.y
-    }
-    Websites.update_sticker(sticker, attrs)
+    if sticker_id do
+      new_sticker = Enum.find(socket.assigns.stickers, nil, fn sticker ->
+        sticker_id == sticker.id
+      end)
+      sticker = Websites.get_sticker!(sticker_id)
+      if sticker do
+        attrs = %{
+          x: new_sticker.x,
+          y: new_sticker.y
+        }
+        Websites.update_sticker(sticker, attrs)
 
-    {
-      :noreply,
-      socket
-      |> assign(:active_sticker, nil)
-      |> assign(:drag_origin, nil)
-    }
+        {
+          :noreply,
+          socket
+          |> assign(:active_sticker, nil)
+          |> assign(:drag_origin, nil)
+        }
+      else
+        {:noreply, socket}
+      end
+    else
+      {:noreply, socket}
+    end
   end
 
   def handle_event(
@@ -87,11 +108,9 @@ defmodule DollWeb.WebsiteLive.Show do
         y: sticker.y - shift_y,
       }
 
-      IO.inspect(sticker.x, label: "sticker x old")
       new_sticker = sticker
         |> struct(%{x: attrs.x})
         |> struct(%{y: attrs.y})
-      IO.inspect(new_sticker.x, label: "sticker x new")
 
       new_stickers =
         socket.assigns.stickers
@@ -119,6 +138,6 @@ defmodule DollWeb.WebsiteLive.Show do
   def handle_info({Websites, [:sticker, _], _}, socket) do
     website = Websites.get_website!(socket.assigns.website.id)
 
-    {:noreply, assign(socket, website: website)}
+    {:noreply, assign(socket, website: website, stickers: website.stickers)}
   end
 end

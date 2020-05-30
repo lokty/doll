@@ -55,6 +55,23 @@ Hooks.draggable_hook = {
   }
 }
 
+Hooks.delete_sticker_hook = {
+  mounted() {
+    this.el.addEventListener("mousedown", e => {
+      e.preventDefault()
+      e.stopPropagation()
+    })       
+    this.el.addEventListener("mouseup", e => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+    this.el.addEventListener("mouseclick", e => {
+      e.preventDefault()
+      e.stopPropagation()
+    })          
+  }
+}
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
 

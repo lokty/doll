@@ -23,6 +23,25 @@
         background-color: salmon;
         width: 100px;
         height: 100px;
+        position: relative;
+        .hover-section {
+          position: absolute;
+          right: -20px;
+          top: 0;
+          display: none;
+          padding-left: 20px;
+          .delete-sticker {
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            cursor: pointer;
+          }
+        }
+        &:hover {
+          .hover-section { 
+            display: flex;
+          }
+        }
       }
     }
   }
