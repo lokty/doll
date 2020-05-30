@@ -28,30 +28,32 @@ Hooks.draggable_hook = {
       console.log("started drag")
       const params = {
         id: getId(e),
-        clientX: e.clientX,
-        clientY: e.clientY
+        clientX: e.screenX,
+        clientY: e.screenY
       }
       this.pushEvent("started_drag", params)
     })
-    this.el.addEventListener("mouseup", e => {
-      console.log("stopped drag")
-      this.pushEvent("stopped_drag", {id: getId(e)})
-    })      
+ 
     this.el.addEventListener("mouseleave", e => {
-      console.log("stopped drag")
-      this.pushEvent("stopped_drag", {id: getId(e)})
-    })           
+      // console.log("stopped drag")
+      // this.pushEvent("stopped_drag", {id: getId(e)})
+    })               
+  }
+}
+
+Hooks.space_hook = {
+  mounted() {
     this.el.addEventListener("mousemove", e => {
-      // console.log(e)
       const params = {
-        id: getId(e),
-        clientX: e.clientX,
-        clientY: e.clientY,
-        movementX: e.movementX,
-        movementY: e.movementY          
+        clientX: e.screenX,
+        clientY: e.screenY,
       }
       this.pushEvent("drag_move", params)
-    })        
+    })  
+    this.el.addEventListener("mouseup", e => {
+      console.log("mouseup")
+      this.pushEvent("stopped_drag", {})
+    })               
   }
 }
 
@@ -84,5 +86,5 @@ liveSocket.connect()
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()
-// >> liveSocket.enableLatencySim(1000)
+>> liveSocket.enableLatencySim(100)
 window.liveSocket = liveSocket

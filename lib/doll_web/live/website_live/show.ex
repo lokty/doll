@@ -58,18 +58,18 @@ defmodule DollWeb.WebsiteLive.Show do
     end
   end
 
-  def handle_event("stopped_drag", %{"id" => sticker_id}, socket) do
-    if sticker_id do
+  def handle_event("stopped_drag", _, socket) do
+    active_sticker = socket.assigns.active_sticker
+    if active_sticker do
       new_sticker = Enum.find(socket.assigns.stickers, nil, fn sticker ->
-        sticker_id == sticker.id
+        active_sticker.id == sticker.id
       end)
-      sticker = Websites.get_sticker!(sticker_id)
-      if sticker do
+      if active_sticker do
         attrs = %{
           x: new_sticker.x,
           y: new_sticker.y
         }
-        Websites.update_sticker(sticker, attrs)
+        Websites.update_sticker(active_sticker, attrs)
 
         {
           :noreply,
@@ -88,16 +88,13 @@ defmodule DollWeb.WebsiteLive.Show do
   def handle_event(
     "drag_move",
     %{
-      "id" => sticker_id,
-      "movementX" => movement_x,
-      "movementY" => movement_y,
       "clientX" => client_x,
       "clientY" => client_y
     },
     socket
   ) do
     active_sticker = socket.assigns.active_sticker
-    if active_sticker && (movement_x != 0 && movement_y != 0) && sticker_id == active_sticker.id do
+    if active_sticker do
       drag_origin = socket.assigns.drag_origin
       shift_x = drag_origin.x - client_x
       shift_y = drag_origin.y - client_y

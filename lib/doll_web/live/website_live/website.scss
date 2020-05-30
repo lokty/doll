@@ -18,6 +18,7 @@
         padding: 50px;
         cursor: grabbing;
         transform: translate(-25%, -25%);
+        // pointer-events: none;
       }  
       .sticker {
         background-color: salmon;
