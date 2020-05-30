@@ -86,5 +86,6 @@ liveSocket.connect()
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()
->> liveSocket.enableLatencySim(100)
+// >> liveSocket.enableLatencySim(100)
+liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
