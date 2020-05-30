@@ -5,11 +5,11 @@
   <div class="stickers-container">
     <%= for sticker <- @stickers do %>
       <div
-        id="sticker-<%= sticker.id %>"
-        draggable="false"
+        id="stickerwrapper-<%= sticker.id %>"
         phx-hook="draggable_hook"
+        draggable="false"
         class="
-          sticker
+          sticker-wrapper
           <%= if @active_sticker && @active_sticker.id == sticker.id, do: " moving", else: "" %>
         "
         style="
@@ -17,11 +17,16 @@
           top: <%= sticker.y %>px
         "
       >
-
+        <div
+          id="sticker-<%= sticker.id %>"
+          class="sticker"
+        >
+        </div>
       </div>
-    <% end %>
-  </div>
+      <% end %>
+    </div>
   <div class="add-sticker button" phx-click="add_sticker">
     +
+  </div>
   </div>
 </div>

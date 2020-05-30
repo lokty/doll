@@ -18,7 +18,7 @@ import NProgress from "nprogress"
 import {LiveSocket} from "phoenix_live_view"
 
 const getId = (e) => {
-  return e.target.id.split("-")[1]
+  return Number(e.target.id.split("-")[1])
 } 
 
 let Hooks = {}

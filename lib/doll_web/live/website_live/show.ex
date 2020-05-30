@@ -31,17 +31,31 @@ defmodule DollWeb.WebsiteLive.Show do
   end
 
   def handle_event("started_drag", %{"id" => sticker_id, "clientX" => client_x, "clientY" => client_y}, socket) do
-    sticker = Websites.get_sticker!(sticker_id)
-    drag_origin = %{x: client_x, y: client_y}
-    {
-      :noreply,
-      socket
-      |> assign(:active_sticker, sticker)
-      |> assign(:drag_origin, drag_origin)
-    }
+    unless socket.assigns.active_sticker do
+      sticker = Websites.get_sticker!(sticker_id)
+      drag_origin = %{x: client_x, y: client_y}
+      {
+        :noreply,
+        socket
+        |> assign(:active_sticker, sticker)
+        |> assign(:drag_origin, drag_origin)
+      }
+    else
+      {:noreply, socket}
+    end
   end
 
-  def handle_event("stopped_drag", %{"id" => _sticker_id}, socket) do
+  def handle_event("stopped_drag", %{"id" => sticker_id}, socket) do
+    new_sticker = Enum.find(socket.assigns.stickers, nil, fn sticker ->
+      sticker_id == sticker.id
+    end)
+    sticker = Websites.get_sticker!(sticker_id)
+    attrs = %{
+      x: new_sticker.x,
+      y: new_sticker.y
+    }
+    Websites.update_sticker(sticker, attrs)
+
     {
       :noreply,
       socket
@@ -53,7 +67,7 @@ defmodule DollWeb.WebsiteLive.Show do
   def handle_event(
     "drag_move",
     %{
-      "id" => _sticker_id,
+      "id" => sticker_id,
       "movementX" => movement_x,
       "movementY" => movement_y,
       "clientX" => client_x,
@@ -61,7 +75,8 @@ defmodule DollWeb.WebsiteLive.Show do
     },
     socket
   ) do
-    if socket.assigns.active_sticker && (movement_x != 0 && movement_y != 0) do
+    active_sticker = socket.assigns.active_sticker
+    if active_sticker && (movement_x != 0 && movement_y != 0) && sticker_id == active_sticker.id do
       drag_origin = socket.assigns.drag_origin
       shift_x = drag_origin.x - client_x
       shift_y = drag_origin.y - client_y
@@ -87,16 +102,6 @@ defmodule DollWeb.WebsiteLive.Show do
             [old_sticker | acc]
           end
         end)
-
-      spawn(fn ->
-        case Websites.update_sticker(sticker, attrs) do
-          {:ok, _sticker} ->
-            exit(:normal)
-          {:error, _} ->
-            exit(:normal)
-          true -> exit(:normal)
-        end
-      end)
 
       {
         :noreply,
