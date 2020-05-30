@@ -1,0 +1,35 @@
+<h1>Listing Websites</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <%= live_modal @socket, DollWeb.WebsiteLive.FormComponent,
+    id: @website.id || :new,
+    title: @page_title,
+    action: @live_action,
+    website: @website,
+    return_to: Routes.website_index_path(@socket, :index) %>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="websites">
+    <%= for website <- @websites do %>
+      <tr id="website-<%= website.id %>">
+        <td><%= website.name %></td>
+
+        <td>
+          <span><%= live_redirect "Show", to: Routes.website_show_path(@socket, :show, website) %></span>
+          <span><%= live_patch "Edit", to: Routes.website_index_path(@socket, :edit, website) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: website.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Website", to: Routes.website_index_path(@socket, :new) %></span>

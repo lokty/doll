@@ -1,0 +1,22 @@
+<div class="website-space">
+  <div style="position: absolute"><%= @moving_sticker %></div>
+  <div class="stickers-container">
+    <%= for sticker <- @stickers do %>
+      <div
+        id="sticker-<%= sticker.id %>"
+        draggable="false"
+        phx-hook="draggable_hook"
+        class="sticker"
+        style="
+          left: <%= sticker.x %>px;
+          top: <%= sticker.y %>px
+        "
+      >
+
+      </div>
+    <% end %>
+  </div>
+  <div class="add-sticker button" phx-click="add_sticker">
+    +
+  </div>
+</div>

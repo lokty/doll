@@ -1,0 +1,32 @@
+<h1>Show Sticker</h1>
+
+<%= if @live_action in [:edit] do %>
+  <%= live_modal @socket, DollWeb.StickerLive.FormComponent,
+    id: @sticker.id,
+    title: @page_title,
+    action: @live_action,
+    sticker: @sticker,
+    return_to: Routes.sticker_show_path(@socket, :show, @sticker) %>
+<% end %>
+
+<ul>
+
+  <li>
+    <strong>X:</strong>
+    <%= @sticker.x %>
+  </li>
+
+  <li>
+    <strong>Y:</strong>
+    <%= @sticker.y %>
+  </li>
+
+  <li>
+    <strong>Type:</strong>
+    <%= @sticker.type %>
+  </li>
+
+</ul>
+
+<span><%= live_patch "Edit", to: Routes.sticker_show_path(@socket, :edit, @sticker), class: "button" %></span>
+<span><%= live_redirect "Back", to: Routes.sticker_index_path(@socket, :index) %></span>
