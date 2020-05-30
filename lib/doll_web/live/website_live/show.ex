@@ -8,9 +8,8 @@ defmodule DollWeb.WebsiteLive.Show do
     {
       :ok,
       socket
-      |> assign(:moving_sticker, nil)
-      |> assign(:drag_origin_x, 0)
-      |> assign(:drag_origin_y, 0)
+      |> assign(:active_sticker, nil)
+      |> assign(:drag_origin, nil)
     }
   end
 
@@ -31,38 +30,79 @@ defmodule DollWeb.WebsiteLive.Show do
     {:noreply, socket}
   end
 
-  def handle_event("started_drag", %{"id" => sticker_id}, socket) do
-    {:noreply, socket |> assign(:moving_sticker, sticker_id)}
+  def handle_event("started_drag", %{"id" => sticker_id, "clientX" => client_x, "clientY" => client_y}, socket) do
+    sticker = Websites.get_sticker!(sticker_id)
+    drag_origin = %{x: client_x, y: client_y}
+    {
+      :noreply,
+      socket
+      |> assign(:active_sticker, sticker)
+      |> assign(:drag_origin, drag_origin)
+    }
   end
 
-  def handle_event("stopped_drag", %{"id" => sticker_id}, socket) do
-    {:noreply, socket |> assign(:moving_sticker, nil)}
+  def handle_event("stopped_drag", %{"id" => _sticker_id}, socket) do
+    {
+      :noreply,
+      socket
+      |> assign(:active_sticker, nil)
+      |> assign(:drag_origin, nil)
+    }
   end
 
-  def handle_event("drag_move", %{"id" => sticker_id, "movementX" => movement_x, "movementY" => movement_y}, socket) do
-    if socket.assigns.moving_sticker do
-      sticker = Websites.get_sticker!(sticker_id)
+  def handle_event(
+    "drag_move",
+    %{
+      "id" => _sticker_id,
+      "movementX" => movement_x,
+      "movementY" => movement_y,
+      "clientX" => client_x,
+      "clientY" => client_y
+    },
+    socket
+  ) do
+    if socket.assigns.active_sticker && (movement_x != 0 && movement_y != 0) do
+      drag_origin = socket.assigns.drag_origin
+      shift_x = drag_origin.x - client_x
+      shift_y = drag_origin.y - client_y
+
+      sticker = socket.assigns.active_sticker
       attrs = %{
-        x: sticker.x + movement_x,
-        y: sticker.y + movement_y,
+        x: sticker.x - shift_x,
+        y: sticker.y - shift_y,
       }
-      case Websites.update_sticker(sticker, attrs) do
-        {:ok, sticker} ->
-          new_stickers =
-            socket.assigns.stickers
-            |> Enum.reduce([], fn old_sticker, acc ->
-              if sticker.id == old_sticker.id do
-                [sticker | acc]
-              else
-                [old_sticker | acc]
-              end
-            end)
-          {:noreply, socket |> assign(:stickers, new_stickers)}
 
-        {:error, _changeset} ->
-          {:noreply, socket}
-        true -> socket
-      end
+      IO.inspect(sticker.x, label: "sticker x old")
+      new_sticker = sticker
+        |> struct(%{x: attrs.x})
+        |> struct(%{y: attrs.y})
+      IO.inspect(new_sticker.x, label: "sticker x new")
+
+      new_stickers =
+        socket.assigns.stickers
+        |> Enum.reduce([], fn old_sticker, acc ->
+          if new_sticker.id == old_sticker.id do
+            [new_sticker | acc]
+          else
+            [old_sticker | acc]
+          end
+        end)
+
+      spawn(fn ->
+        case Websites.update_sticker(sticker, attrs) do
+          {:ok, _sticker} ->
+            exit(:normal)
+          {:error, _} ->
+            exit(:normal)
+          true -> exit(:normal)
+        end
+      end)
+
+      {
+        :noreply,
+        socket
+        |> assign(:stickers, new_stickers)
+      }
     else
       {:noreply, socket}
     end

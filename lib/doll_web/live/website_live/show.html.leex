@@ -1,12 +1,17 @@
 <div class="website-space">
-  <div style="position: absolute"><%= @moving_sticker %></div>
+  <%= if @active_sticker do %>
+    <div style="position: absolute"><%= @active_sticker.id %></div>
+  <% end %>
   <div class="stickers-container">
     <%= for sticker <- @stickers do %>
       <div
         id="sticker-<%= sticker.id %>"
         draggable="false"
         phx-hook="draggable_hook"
-        class="sticker"
+        class="
+          sticker
+          <%= if @active_sticker && @active_sticker.id == sticker.id, do: " moving", else: "" %>
+        "
         style="
           left: <%= sticker.x %>px;
           top: <%= sticker.y %>px

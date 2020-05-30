@@ -21,4 +21,8 @@
   width: 100px;
   height: 100px;
   background-color: salmon;
+  cursor: grab;
+  &.moving {
+    cursor: grabbing;
+  }
 }

@@ -23,27 +23,37 @@ const getId = (e) => {
 
 let Hooks = {}
 Hooks.draggable_hook = {
-    mounted() {
-      this.el.addEventListener("mousedown", e => {
-        console.log("started drag")
-        this.pushEvent("started_drag", {id: getId(e)})
-      })
-      this.el.addEventListener("mouseup", e => {
-        console.log("stopped drag")
-        this.pushEvent("stopped_drag", {id: getId(e)})
-      })      
-      this.el.addEventListener("mousemove", e => {
-        console.log(e)
-        const params = {
-          id: getId(e),
-          movementX: e.movementX,
-          movementY: e.movementY,
-        }
-        this.pushEvent("drag_move", params)
-      })        
-
-    }
+  mounted() {
+    this.el.addEventListener("mousedown", e => {
+      console.log("started drag")
+      const params = {
+        id: getId(e),
+        clientX: e.clientX,
+        clientY: e.clientY
+      }
+      this.pushEvent("started_drag", params)
+    })
+    this.el.addEventListener("mouseup", e => {
+      console.log("stopped drag")
+      this.pushEvent("stopped_drag", {id: getId(e)})
+    })      
+    this.el.addEventListener("mouseleave", e => {
+      console.log("stopped drag")
+      this.pushEvent("stopped_drag", {id: getId(e)})
+    })           
+    this.el.addEventListener("mousemove", e => {
+      // console.log(e)
+      const params = {
+        id: getId(e),
+        clientX: e.clientX,
+        clientY: e.clientY,
+        movementX: e.movementX,
+        movementY: e.movementY          
+      }
+      this.pushEvent("drag_move", params)
+    })        
   }
+}
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket("/live", Socket, {hooks: Hooks, params: {_csrf_token: csrfToken}})
